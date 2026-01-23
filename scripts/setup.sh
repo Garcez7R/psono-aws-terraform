@@ -53,6 +53,8 @@ fi
 # 4. Subir o Docker Compose
 log "🚢 Subindo os containers..."
 cd "$(dirname "$0")/../docker"
+# Forçar a recriação para garantir que as novas variáveis sejam aplicadas
+sudo docker compose down
 sudo docker compose pull -q
 sudo docker compose up -d
 
