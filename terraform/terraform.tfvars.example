@@ -1,0 +1,108 @@
+# Psono Server – Terraform Configuration Example
+# Copy this to terraform.tfvars and customize for your environment
+
+# ============================================
+# AWS CONFIGURATION
+# ============================================
+
+# AWS region where infrastructure will be deployed
+aws_region = "us-east-1"
+
+# Availability zone suffix (a, b, c)
+availability_zone = "a"
+
+# Environment tag (lab, staging, prod)
+environment = "lab"
+
+# ============================================
+# EC2 INSTANCE CONFIGURATION
+# ============================================
+
+# Instance type: t3.micro (free tier), t3.small (recommended), t3.medium+ (production)
+# Lab: t3.small (2 vCPU, 2 GB RAM, ~$0.02/hour)
+instance_type = "t3.small"
+
+# Root volume size in GB (minimum 20, recommended 30+)
+root_volume_size = 30
+
+# Allocate and use Elastic IP for static IP address
+use_elastic_ip = true
+
+# Optional: Specify private IP (auto-assigned if null)
+private_ip = null
+
+# ============================================
+# PSONO CREDENTIALS
+# ============================================
+
+# Repository URL - Replace with your actual GitHub/GitLab URL
+# Format: https://github.com/username/repo.git or git@github.com:username/repo.git
+repository_url = "https://github.com/YOUR_USERNAME/PsOno.git"
+
+# Initial admin username (will be created on first deploy)
+psono_admin_username = "admin"
+
+# Initial admin password (⚠️ MUST be changed on first login!)
+# Requirements: minimum 12 characters, uppercase, lowercase, numbers
+# Generate secure password: openssl rand -base64 16
+psono_admin_password = "ChangeMe@Lab123456"
+
+# PostgreSQL database password
+# Requirements: minimum 12 characters, uppercase, lowercase, numbers
+db_password = "PgPass@Lab123456"
+
+# Django SECRET_KEY for Psono
+# Generate: python3 -c "import secrets; print(secrets.token_urlsafe(50))"
+secret_key = "your-secret-key-here-minimum-32-characters-required"
+
+# ============================================
+# DOCKER HUB (Optional - for private images)
+# ============================================
+
+# Docker Hub username (leave empty if using public images)
+docker_user = ""
+
+# Docker Hub password or personal access token (leave empty if using public images)
+docker_password = ""
+
+# ============================================
+# SECURITY CONFIGURATION
+# ============================================
+
+# CIDR blocks allowed for SSH access
+# ⚠️ Lab default: 0.0.0.0/0 (world open - restrict in production!)
+# Production example: ["203.0.113.0/24"] (your office IP)
+allowed_ssh_cidrs = ["0.0.0.0/0"]
+
+# CIDR blocks allowed for HTTP access
+# Lab default: 0.0.0.0/0 (world open)
+# Production: restrict to load balancer or specific IPs
+allowed_http_cidrs = ["0.0.0.0/0"]
+
+# Enable termination protection to prevent accidental deletion
+enable_termination_protection = true
+
+# ============================================
+# MONITORING & LOGGING
+# ============================================
+
+# Enable CloudWatch detailed monitoring
+enable_monitoring = true
+
+# ============================================
+# TAGS
+# ============================================
+
+# Additional tags to apply to all resources
+tags = {
+  Terraform   = "true"
+  Application = "Psono"
+  CreatedBy   = "Terraform"
+  Purpose     = "Password Management Lab"
+}
+
+# ============================================
+# SENSITIVE VARIABLES
+# ============================================
+# These should be marked as sensitive in variables.tf and not printed in outputs
+# Store in separate .tfvars.local file or use AWS Secrets Manager in production

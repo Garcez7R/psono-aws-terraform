@@ -1,0 +1,96 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: psono-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-psono}
+      POSTGRES_USER: ${DB_USER:-psono}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - psono-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-psono} -d ${DB_NAME:-psono}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      description: "PostgreSQL database for Psono"
+
+  # Psono Server (Gunicorn + Django)
+  psono:
+    image: psono/psono-server:latest
+    container_name: psono-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      DATABASE_ENGINE: django.db.backends.postgresql
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: ${DB_NAME:-psono}
+      DATABASE_USER: ${DB_USER:-psono}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG:-False}
+      
+      # Email (optional - disable for lab)
+      EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+      
+      # CORS (restrict in production)
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,http://127.0.0.1}
+      
+      # Initial Admin (will be changed on first login)
+      PSONO_ADMIN_USERNAME: ${PSONO_ADMIN_USERNAME:-admin}
+      PSONO_ADMIN_PASSWORD: ${PSONO_ADMIN_PASSWORD}
+    
+    volumes:
+      - psono_data:/app/var
+    networks:
+      - psono-network
+    restart: unless-stopped
+    expose:
+      - "8000"
+    labels:
+      description: "Psono Server API"
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: psono-nginx
+    depends_on:
+      - psono
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - psono-network
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      description: "Nginx reverse proxy"
+
+networks:
+  psono-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  psono_data:
+    driver: local

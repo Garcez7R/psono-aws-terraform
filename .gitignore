@@ -1,0 +1,59 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+terraform.tfvars
+terraform.tfvars.json
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# SSH Keys
+*.pem
+*.pub
+!example.pub
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+.dockerignore
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python (se usado em scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Node (se usado)
+node_modules/
+npm-debug.log
+
+# Credentials e secrets
+credentials.json
+*secret*
+*token*
+.aws/credentials
+
+# Temporários
+tmp/
+temp/
+*.tmp
